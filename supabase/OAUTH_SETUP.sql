@@ -1,0 +1,17 @@
+-- ═══════════════════════════════════════════════════════
+-- Enable Google OAuth in Supabase
+-- ═══════════════════════════════════════════════════════
+--
+-- STEP 1: Google Cloud Console
+-- 1. https://console.cloud.google.com/apis/credentials
+-- 2. Create OAuth 2.0 Client ID (Web application)
+-- 3. Authorized redirect URI:
+--    https://ikeoivqhrnpdfqdsiidj.supabase.co/auth/v1/callback
+-- 4. Copy Client ID + Client Secret
+--
+-- STEP 2: Supabase Dashboard
+-- 1. Authentication → Providers → Enable Google
+-- 2. Paste Client ID + Client Secret → Save
+--
+-- STEP 3: Test
+-- signInWithGoogle() in src/config/supabase.js is ready

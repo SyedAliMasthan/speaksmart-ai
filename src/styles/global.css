@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Gilda+Display&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --brand: #1B998B; --brand-light: #2BC4B4; --brand-dark: #157A6E;
+  --bg: #0D0F14; --bg2: #161923; --bg3: #1E2330; --card: #1A1D28;
+  --text: #F1F5F9; --text2: #94A3B8; --muted: #64748B;
+  --border: #1E293B; --border2: #334155;
+  --red: #DC2626; --green: #16A34A; --yellow: #EAB308; --blue: #3B82F6; --orange: #F97316;
+  --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: 'DM Mono', monospace;
+  --radius: 10px; --radius-lg: 16px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body, #root { height: 100%; }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--font);
+  overflow-x: hidden; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+input, button, textarea, select { font-family: inherit; }
+input::placeholder { color: rgba(241,245,249,0.2); }
+input:-webkit-autofill { -webkit-box-shadow: 0 0 0 100px var(--bg2) inset !important; -webkit-text-fill-color: var(--text) !important; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+a { color: var(--brand); text-decoration: none; transition: color .2s; }
+a:hover { color: var(--brand-light); }
+
+.page-wrap { min-height: 100vh; background: var(--bg); padding-bottom: 100px; }
+.page-inner { max-width: 680px; margin: 0 auto; padding: 0 18px; }
+@media(min-width:820px) { .page-inner { padding: 0 24px; } }
+
+.skip-link {
+  position: absolute; top: -40px; left: 0; background: var(--brand); color: #fff;
+  padding: 8px 16px; z-index: 100; font-size: 14px; font-weight: 600;
+  border-radius: 0 0 6px 0; transition: top .2s;
+}
+.skip-link:focus { top: 0; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes shimmer { from { background-position: -200% center; } to { background-position: 200% center; } }
+@keyframes micPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(251,113,133,.4); } 50% { box-shadow: 0 0 0 22px rgba(251,113,133,0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

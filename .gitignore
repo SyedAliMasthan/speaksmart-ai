@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.local
+.env.production
+.env.staging
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+npm-debug.log*
+supabase/.temp/

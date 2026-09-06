@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /practice
+Disallow: /profile
+Disallow: /settings
+Disallow: /api/
+
+Sitemap: https://speaksmarts.in/sitemap.xml
