@@ -1,6 +1,6 @@
 node_modules/
-dist/
-dist-ssr/
+/dist/
+/dist-ssr/
 *.local
 .env
 .env.local
@@ -14,3 +14,15 @@ dist-ssr/
 Thumbs.db
 npm-debug.log*
 supabase/.temp/
+
+
+.env.*
+!.env.example
+!.env.server.example
+!apps/spendwise/.env.example
+*.sqlite*
+__pycache__/
+*.pyc
+coverage/
+
+.venv/

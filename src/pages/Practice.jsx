@@ -5,54 +5,12 @@ import { useVoiceInput } from '../hooks/useVoiceInput';
 import { sanitizeInput } from '../utils/sanitize';
 import { speakWithLiya, stopSpeaking } from '../utils/sarvam';
 
-const LESSONS = {
-  'my-family':{id:'my-family',title:'My Family',subtitle:'Possessives / Describing people',icon:'👨‍👩‍👧',steps:15,pTitle:'About My Family'},
-  'introduce-yourself':{id:'introduce-yourself',title:'Introduce Yourself',subtitle:'Self-introduction',icon:'👋',steps:12,pTitle:'My Self-Introduction'},
-  'daily-routine':{id:'daily-routine',title:'My Daily Routine',subtitle:'Present Simple / Time words',icon:'⏰',steps:15,pTitle:'My Daily Routine'},
-  'food-i-love':{id:'food-i-love',title:'Food I Love',subtitle:'Describing food & preferences',icon:'🍛',steps:12,pTitle:'My Favourite Food'},
-  'my-hometown':{id:'my-hometown',title:'My Hometown',subtitle:'There is/are / Prepositions',icon:'🏙️',steps:12,pTitle:'About My Hometown'},
-  'weekend-plans':{id:'weekend-plans',title:'Weekend Plans',subtitle:'Future tense / Going to',icon:'🎉',steps:12,pTitle:'My Weekend Plans'},
-  'dream-job':{id:'dream-job',title:'My Dream Job',subtitle:'Would like to / Ambitions',icon:'💼',steps:15,pTitle:'My Dream Job'},
-  'job-interview':{id:'job-interview',title:'Job Interview',subtitle:'Professional English',icon:'🎯',steps:20,pTitle:'My Interview Introduction'},
-  'at-restaurant':{id:'at-restaurant',title:'At a Restaurant',subtitle:'Ordering / Polite English',icon:'🍽️',steps:12,pTitle:null},
-  'travel':{id:'travel',title:'Travel & Places',subtitle:'Describing places',icon:'✈️',steps:12,pTitle:'My Travel Story'},
-};
+import { LESSONS } from '../../shared/lessons';
+import { apiRequest } from '../utils/api';
+import { supabase } from '../config/supabase';
 
-async function askLiya(messages, lesson, factsStr) {
-  const sys = `You are Liya, a warm friendly female English coach. Clear, encouraging, works for children AND adults.
-
-LESSON: "${lesson.title}" — ${lesson.subtitle}
-
-YOUR JOB ON EVERY USER MESSAGE:
-1. Correct their English naturally (show better version, don't lecture)
-2. Give a SUGGESTION — a more polished/natural way to say it. ALWAYS provide this.
-3. Ask a follow-up question to collect more info
-4. Build toward a complete paragraph
-
-FACTS SO FAR:\n${factsStr}
-
-RESPOND IN EXACT JSON:
-{"reply":"Your warm response","corrected":"Corrected version or null","suggestion":"More polished way — ALWAYS give this","followUpQuestion":"Next question","collectedFact":"Short fact from their msg","isComplete":false,"finalParagraph":null}
-
-When 5-8 facts collected, set isComplete=true, write beautiful finalParagraph combining everything.
-
-RULES:
-- ALWAYS give suggestion even if English is perfect
-- Keep examples Indian daily life relevant
-- NEVER dump grammar rules or tense labels
-- Suggestion = heart of this app`;
-
-  try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${import.meta.env.VITE_GROQ_API_KEY}`},
-      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sys},...messages],temperature:0.7,max_tokens:600,response_format:{type:'json_object'}}),
-    });
-    if(!res.ok) throw new Error();
-    return JSON.parse((await res.json()).choices[0].message.content);
-  } catch {
-    return {reply:"Oops, I missed that! Could you say it again? 😊",corrected:null,suggestion:null,followUpQuestion:null,collectedFact:null,isComplete:false,finalParagraph:null};
-  }
+async function askLiya(messages, lesson, facts) {
+  return apiRequest('/api/chat', { lessonId: lesson.id, messages: messages.slice(-20), facts: facts.slice(-8) });
 }
 
 function LiyaAvatar({size=32}) {
@@ -81,7 +39,7 @@ function FinalCard({title,paragraph,onListen}) {
   const [copied,setCopied]=useState(false);
   const [saved,setSaved]=useState(false);
   const copy=async()=>{try{await navigator.clipboard.writeText(paragraph);setCopied(true);setTimeout(()=>setCopied(false),2000)}catch{}};
-  const save=()=>{const b=new Blob([`${title}\n\n${paragraph}\n\n— Practiced on SpeakSmart AI`],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`${title.replace(/\s+/g,'_')}.txt`;a.click();setSaved(true);setTimeout(()=>setSaved(false),2000)};
+  const save=()=>{const b=new Blob([`${title}\n\n${paragraph}\n\n— Practiced on SpeakSmart AI`],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`${title.replace(/\s+/g,'_')}.txt`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);setSaved(true);setTimeout(()=>setSaved(false),2000)};
   return (
     <div style={{margin:'12px 0',borderRadius:18,border:'2px solid #ec489944',background:'linear-gradient(135deg,#1a0a1e,#0f1729,#0a1e1a)',overflow:'hidden',animation:'scaleIn .5s cubic-bezier(.16,1,.3,1)'}}>
       <div style={{padding:'16px 20px 12px',background:'linear-gradient(135deg,#ec489915,#a855f715)',borderBottom:'1px solid #ec489922'}}>
@@ -125,6 +83,10 @@ function Ring({current,total,size=38}) {
 
 export default function Practice() {
   const {topic}=useParams();
+  const { user } = useAuth();
+  const [error, setError] = useState('');
+  const sending = useRef(false);
+  const generation = useRef(0);
   const nav=useNavigate();
   const lesson=LESSONS[topic]||LESSONS['introduce-yourself'];
   const [msgs,setMsgs]=useState([]);
@@ -137,7 +99,7 @@ export default function Practice() {
   const inputRef=useRef(null);
 
   const {isListening,isProcessing,transcript,startListening,stopListening}=useVoiceInput({
-    language:'en-IN',onResult:(t)=>{if(t.trim())send(t.trim())},onError:()=>{},
+    language:'en-IN',onResult:(t)=>{if(t.trim())send(t.trim())},onError:()=>setError('Voice input is unavailable. You can type your answer.'),
   });
 
   useEffect(()=>{if(chatRef.current)chatRef.current.scrollTo({top:chatRef.current.scrollHeight,behavior:'smooth'})},[msgs,busy]);
@@ -157,34 +119,46 @@ export default function Practice() {
     };
     const t=o[lesson.id]||`Hi! I'm Liya 😊 Let's practice "${lesson.title}"!`;
     setMsgs([{role:'assistant',text:t,corrected:null,suggestion:null,finalParagraph:null}]);
+    generation.current++; sending.current = false; setBusy(false); setError('');
     setStep(1);setFacts([]);setDone(false);
-    setTimeout(()=>speakWithLiya(t),500);
-    return ()=>stopSpeaking();
+    const greeting = setTimeout(()=>speakWithLiya(t),500);
+    return ()=>{ clearTimeout(greeting); generation.current++; stopSpeaking(); };
   },[lesson.id]);
 
   useEffect(()=>{if(transcript)setInput(transcript)},[transcript]);
 
   const send=useCallback(async(override)=>{
     const text=sanitizeInput(override||input).trim();
-    if(!text||busy||done) return;
+    if(!text||sending.current||done) return;
+    sending.current = true; setError('');
+    const requestGeneration = generation.current;
     setInput('');
     const u={role:'user',text};
     setMsgs(p=>[...p,u]);
     setBusy(true);
     const hist=[...msgs,u].map(m=>({role:m.role==='user'?'user':'assistant',content:m.text}));
-    const fs=facts.length?facts.map((f,i)=>`${i+1}. ${f}`).join('\n'):'Nothing yet';
-    const ai=await askLiya(hist,lesson,fs);
+    try {
+    const ai=await askLiya(hist,lesson,facts);
+    if (requestGeneration !== generation.current) return;
     let display=ai.reply||'';
     if(ai.followUpQuestion&&!ai.isComplete) display+=' '+ai.followUpQuestion;
     const a={role:'assistant',text:display,corrected:ai.corrected||null,suggestion:ai.suggestion||null,finalParagraph:ai.isComplete?ai.finalParagraph:null,pTitle:lesson.pTitle};
     setMsgs(p=>[...p,a]);
     setStep(s=>Math.min(s+1,lesson.steps));
     if(ai.collectedFact) setFacts(p=>[...p,ai.collectedFact]);
-    if(ai.isComplete) setDone(true);
+    if(ai.isComplete) {
+      setDone(true);
+      const { error: saveError } = await supabase.from('practice_sessions').insert({ user_id: user.id, lesson_id: lesson.id, summary: ai.finalParagraph || '', completed: true });
+      if (requestGeneration !== generation.current) return;
+      if (saveError) setError('Your paragraph is ready, but progress could not be saved. Download a copy below.');
+    }
     speakWithLiya(display);
-    setBusy(false);
-    inputRef.current?.focus();
-  },[input,busy,done,msgs,lesson,facts]);
+    } catch (err) {
+      if (requestGeneration === generation.current) { setError(err.message); setInput(text); setMsgs(p=>p.filter(m=>m!==u)); }
+    } finally {
+      if (requestGeneration === generation.current) { sending.current=false; setBusy(false); inputRef.current?.focus(); }
+    }
+  },[input,done,msgs,lesson,facts,user]);
 
   return (
     <div style={{height:'100dvh',display:'flex',flexDirection:'column',background:'#0d0f14',fontFamily:"'Plus Jakarta Sans',sans-serif",color:'#f1f5f9',maxWidth:720,margin:'0 auto'}}>
@@ -201,6 +175,7 @@ export default function Practice() {
       </header>
 
       <div ref={chatRef} style={{flex:1,overflowY:'auto',padding:'14px 14px 8px',display:'flex',flexDirection:'column',gap:6}}>
+        {error && <p role="alert" className="notice error">{error}</p>}
         {msgs.map((m,i)=><Msg key={i} msg={m} index={i} onListen={speakWithLiya}/>)}
         {busy&&<Dots/>}
         {done&&<div style={{textAlign:'center',padding:'20px 16px',margin:'8px 0',animation:'fadeUp .5s ease-out'}}>
@@ -217,7 +192,7 @@ export default function Practice() {
           :<><div style={{width:12,height:12,borderRadius:'50%',border:'2px solid #1e293b',borderTopColor:'#a855f7',animation:'spin .8s linear infinite'}}/><span style={{fontSize:12,color:'#94a3b8',fontWeight:500}}>Processing with Sarvam AI...</span></>}
         </div>}
         <div style={{display:'flex',alignItems:'flex-end',gap:8}}>
-          <button onClick={isListening?stopListening:startListening} disabled={isProcessing||busy} style={{width:44,height:44,borderRadius:12,flexShrink:0,background:isListening?'linear-gradient(135deg,#dc2626,#b91c1c)':'#1a1d28',border:isListening?'none':'1px solid #1e293b',color:isListening?'#fff':'#94a3b8',fontSize:18,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',animation:isListening?'micPulse 1.5s ease-in-out infinite':'none',opacity:(isProcessing||busy)?.4:1}}>🎤</button>
+          <button onClick={isListening?stopListening:startListening} disabled={isProcessing||busy} style={{width:44,height:44,borderRadius:12,flexShrink:0,background:isListening?'linear-gradient(135deg,#dc2626,#b91c1c)':'#1a1d28',border:isListening?'none':'1px solid #1e293b',color:isListening?'#fff':'#94a3b8',fontSize:18,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',animation:isListening?'micPulse 1.5s ease-in-out infinite':'none',opacity:(isProcessing||busy)?0.4:1}}>🎤</button>
           <div style={{flex:1,position:'relative',background:'#161923',borderRadius:14,border:'1px solid #1e293b'}}>
             <textarea ref={inputRef} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Type or use mic to speak..." rows={1} disabled={busy||isListening} style={{width:'100%',padding:'12px 48px 12px 16px',background:'transparent',border:'none',outline:'none',color:'#e2e8f0',fontSize:15,lineHeight:1.5,resize:'none',fontFamily:'inherit',maxHeight:100}}/>
             <button onClick={()=>send()} disabled={!input.trim()||busy} style={{position:'absolute',right:6,bottom:6,width:34,height:34,borderRadius:10,border:'none',fontSize:14,cursor:input.trim()?'pointer':'default',background:input.trim()?'linear-gradient(135deg,#ec4899,#a855f7)':'#1e2330',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',opacity:input.trim()?1:.3,transition:'all .2s'}}>↑</button>
@@ -228,3 +203,4 @@ export default function Practice() {
     </div>
   );
 }
+

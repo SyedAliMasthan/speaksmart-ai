@@ -10,11 +10,11 @@ export default function TermsOfService() {
           <H2>1. Acceptance</H2>
           <p>By using SpeakSmart AI ("Service"), you agree to these Terms. If you don't agree, don't use it.</p>
           <H2>2. The Service</H2>
-          <p>SpeakSmart AI is a free AI-powered English learning platform with conversational practice, vocabulary building, and pronunciation feedback for Tamil, Hindi, and Telugu speakers.</p>
+          <p>SpeakSmart AI is a free AI-powered English learning platform with conversational practice, saved practice paragraphs, and voice input and playback for Tamil, Hindi, and Telugu speakers.</p>
           <H2>3. Your Account</H2>
           <p>Provide accurate info. Keep credentials secure. Must be 13+ to use.</p>
           <H2>4. Free Service</H2>
-          <p>SpeakSmart is 100% free. All features are available to all users at no cost. We reserve the right to modify features, but we will never retroactively charge for existing functionality.</p>
+          <p>SpeakSmart is 100% free. AI requests are subject to usage limits and provider availability. We reserve the right to modify features, but we will never retroactively charge for existing functionality.</p>
           <H2>5. Acceptable Use</H2>
           <p>Don't use for unlawful purposes, don't attempt unauthorized access, don't interfere with other users, don't reverse engineer, don't scrape with automated tools.</p>
           <H2>6. AI Content</H2>
@@ -32,3 +32,4 @@ export default function TermsOfService() {
     </div>
   );
 }
+

@@ -1,0 +1,8 @@
+# Add this separate site block to an existing HOST Caddy configuration.
+# The backend must have been started with compose.proxy.yaml.
+# For containerized Caddy, localhost refers to its own container; adapt the
+# Docker network/upstream instead. Do not publish port 8000 to the Internet.
+finance.example.com {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:8000
+}

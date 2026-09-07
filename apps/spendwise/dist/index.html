@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#123f42"><meta name="description" content="Your personal spending, income and monthly budgets, together in one place.">
+  <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Spendwise">
+  <link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="stylesheet" href="/styles.css"><title>Spendwise · Your money, clearly</title><script src="/app.js" defer></script>
+</head>
+<body>
+  <div id="loading" class="boot" role="status"><span class="brandmark">s</span><p>Opening your tracker…</p></div>
+  <main id="auth" class="auth-screen" hidden>
+    <section class="auth-story"><a class="brand" href="/" aria-label="Spendwise home"><span class="brandmark">s</span>spendwise<span class="brand-dot">.</span></a>
+      <div><p class="eyebrow">A LITTLE CLARITY, EVERY DAY</p><h1>Make room for<br>what matters.</h1><p class="auth-intro">Every spend. Every small saving.<br>One place to see the whole picture.</p></div>
+      <p class="auth-foot">Your personal finance tracker · INR</p>
+    </section>
+    <section class="auth-form-wrap"><form id="login-form" class="auth-form"><span class="mobile-brand">spendwise.</span><p class="eyebrow">WELCOME BACK</p><h2>Sign in to your tracker</h2><p class="muted">Use the same account on your phone and laptop.</p>
+      <label>Username<input name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="60"></label>
+      <label>Password<input name="password" type="password" autocomplete="current-password" required maxlength="256"></label>
+      <p class="form-error" id="login-error" role="alert"></p><button class="primary full" type="submit">Sign in <span aria-hidden="true">→</span></button>
+      <p class="small muted">Forgot your password? Reset it on your server using the setup guide.</p>
+    </form></section>
+  </main>
+  <div id="workspace" class="workspace" hidden>
+    <aside class="sidebar"><a class="brand" href="/" aria-label="Spendwise home"><span class="brandmark">s</span>spendwise<span class="brand-dot">.</span></a>
+      <p class="nav-label">YOUR MONEY</p><nav aria-label="Main navigation">
+        <button data-view="overview" class="nav-item active"><span data-icon="overview"></span><span>Overview</span></button>
+        <button data-view="transactions" class="nav-item"><span data-icon="transactions"></span><span>Transactions</span></button>
+        <button data-view="budgets" class="nav-item"><span data-icon="budget"></span><span>Budgets</span></button>
+      </nav>
+      <div class="sidebar-note"><span data-icon="leaf"></span><strong>Small entries.<br>A clearer picture.</strong><p>Record the little things, too.</p></div>
+      <div class="profile"><span class="avatar" id="avatar">S</span><div><strong id="profile-name">Your account</strong><span>Personal tracker</span></div><button id="account-button" class="icon-button" aria-label="Account settings"><span data-icon="settings"></span></button></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><div class="breadcrumb">Personal finance <span>/</span> <strong id="breadcrumb-view">Overview</strong></div><div class="topbar-actions"><span id="sync-status" class="sync-status" role="status">Loading…</span><button id="refresh" class="icon-button" aria-label="Refresh data"><span data-icon="refresh"></span></button><button id="mobile-account" class="icon-button" aria-label="Account settings"><span data-icon="settings"></span></button></div></header>
+      <div class="content">
+        <div id="load-error" class="notice error" hidden role="alert"></div>
+        <section class="page-heading"><div><p class="eyebrow" id="heading-eyebrow">THE BIG PICTURE</p><h1 id="page-title">Your money, clearly.</h1><p class="muted" id="page-subtitle">A little attention today. More confidence tomorrow.</p></div><button id="add-entry" class="primary"><span data-icon="plus"></span>Add transaction</button></section>
+        <div class="period-row"><div class="month-picker"><button id="prev-month" class="icon-button" aria-label="Previous month"><span data-icon="chevron-left"></span></button><label class="sr-only" for="month">Report month</label><input type="month" id="month" required min="1900-01" max="9999-12"><button id="next-month" class="icon-button" aria-label="Next month"><span data-icon="chevron-right"></span></button></div><span class="period-note">All amounts in Indian rupees</span></div>
+
+        <section id="overview-view" aria-label="Overview">
+          <div class="summary-grid">
+            <article class="summary-card spending-card"><div class="card-label">Monthly spending<span data-icon="outgoing"></span></div><p class="big-number" id="total-expense">₹0</p><div class="spending-foot"><span>Every expense, accounted for</span><span class="currency-pill">INR</span></div></article>
+            <article class="summary-card"><div class="card-label">Income recorded<span class="tone-green" data-icon="incoming"></span></div><p class="big-number" id="total-income">₹0</p><p class="card-note">Money coming in this month</p></article>
+            <article class="summary-card"><div class="card-label">Net cash flow<span data-icon="wallet"></span></div><p class="big-number" id="net-flow">₹0</p><p class="card-note">Recorded income minus expenses</p></article>
+          </div>
+          <div class="insight-grid"><article class="panel trend-panel"><div class="panel-heading"><div><h2>Spending through the month</h2><p class="muted small">Your daily expenses</p></div><span class="legend"><i></i>Spending</span></div><div id="daily-chart" class="daily-chart" aria-label="Daily spending chart"></div><div class="chart-footer"><span id="chart-range"></span><span id="daily-average"></span></div></article>
+          <article class="panel category-panel"><div class="panel-heading"><h2>Where it went</h2><span class="small muted">By category</span></div><div id="category-chart"></div></article></div>
+          <article class="budget-strip"><span class="strip-icon" data-icon="budget"></span><div><strong id="overview-budget-title">Give your month a plan</strong><p id="overview-budget-text">Set a monthly budget to see what is left to spend.</p></div><button class="text-button" id="open-budgets">Set budget <span aria-hidden="true">→</span></button></article>
+          <article class="panel recent-panel"><div class="panel-heading"><h2>Recent transactions</h2><button class="text-button" id="view-all">View all <span aria-hidden="true">→</span></button></div><div id="recent-list"></div></article>
+        </section>
+
+        <section id="transactions-view" hidden aria-label="Transactions"><article class="panel transactions-panel"><div class="filters"><label class="search-box"><span data-icon="search"></span><span class="sr-only">Search transactions</span><input type="search" id="search" placeholder="Search description, account or category"></label><label><span class="sr-only">Entry type</span><select id="type-filter"><option value="">All types</option><option value="expense">Expenses</option><option value="income">Income</option><option value="transfer">Transfers</option></select></label><label><span class="sr-only">Category</span><select id="category-filter"><option value="">All categories</option></select></label><label class="check-label"><input type="checkbox" id="all-time">All time</label><button id="export-filtered" class="secondary"><span data-icon="download"></span>Export</button></div><div id="transaction-list"></div><div class="pagination"><span id="page-count"></span><div><button id="prev-page" class="secondary">Previous</button><button id="next-page" class="secondary">Next</button></div></div></article></section>
+
+        <section id="budgets-view" hidden aria-label="Monthly budgets"><article class="budget-hero"><div><p class="eyebrow">YOUR MONTHLY PLAN</p><h2 id="budget-total">Set your spending limit</h2><p id="budget-detail">A limit for all expenses in the selected month.</p><div id="overall-progress" class="progress-track"><div></div></div></div><button class="primary light" data-budget="Overall">Edit monthly budget</button></article><div class="section-heading"><div><h2>Category budgets</h2><p class="muted">Optional limits for the areas you want to watch. Each month has its own plan.</p></div></div><div id="budget-categories" class="budget-grid"></div><p class="small muted budget-help">Your overall limit is independent of category limits. All expenses count toward your overall budget; transfers do not.</p></section>
+        <footer class="page-footer"><span>Spendwise · One entry at a time.</span><span>Transfers are excluded from income and spending.</span></footer>
+      </div>
+    </main>
+    <nav class="mobile-nav" aria-label="Mobile navigation"><button data-view="overview" class="active"><span data-icon="overview"></span>Overview</button><button data-view="transactions"><span data-icon="transactions"></span>Transactions</button><button data-view="budgets"><span data-icon="budget"></span>Budgets</button></nav>
+  </div>
+
+  <dialog id="entry-dialog" aria-labelledby="entry-title"><form id="entry-form"><div class="dialog-heading"><div><p class="eyebrow">KEEP YOUR PICTURE COMPLETE</p><h2 id="entry-title">Add a transaction</h2></div><button class="icon-button" type="button" data-close="entry-dialog" aria-label="Close"><span data-icon="close"></span></button></div>
+    <div class="kind-switch" role="group" aria-label="Transaction type"><button type="button" data-kind="expense" class="active">Expense</button><button type="button" data-kind="income">Income</button><button type="button" data-kind="transfer">Transfer</button></div>
+    <label class="amount-label">Amount <span>INR</span><div class="amount-input"><span>₹</span><input name="amount" id="entry-amount" inputmode="decimal" placeholder="0.00" pattern="[0-9]{1,9}(\.[0-9]{1,2})?" maxlength="12" required autocomplete="off"></div></label>
+    <div class="form-grid"><label>Date<input name="day" type="date" required></label><label>Category<select name="category" required></select></label><label><span id="account-label">Account / wallet</span><input name="account" list="account-options" placeholder="e.g. Bank account or Cash" required maxlength="60" autocomplete="off"></label><label>Payment method<select name="method" required></select></label><label id="to-account-field" class="full-grid" hidden>To account<input name="to_account" list="account-options" placeholder="e.g. Credit card" maxlength="60" autocomplete="off"></label><label class="full-grid">Description <span class="optional">optional</span><input name="description" placeholder="What was this for?" maxlength="240" autocomplete="off"></label></div>
+    <datalist id="account-options"><option value="Bank account"><option value="Cash"><option value="Credit card"></datalist>
+    <p class="small transfer-hint" id="transfer-hint" hidden>Move money between accounts or record a credit-card repayment. Record card purchases as expenses when you make them.</p>
+    <p class="form-error" id="entry-error" role="alert"></p><div class="dialog-footer"><button id="delete-entry" class="danger-text" type="button" hidden>Delete transaction</button><div class="footer-right"><button class="secondary" type="button" data-close="entry-dialog">Cancel</button><button class="primary" type="submit" id="save-entry">Save transaction</button></div></div>
+  </form></dialog>
+  <dialog id="budget-dialog" aria-labelledby="budget-title"><form id="budget-form"><div class="dialog-heading"><h2 id="budget-title">Monthly budget</h2><button class="icon-button" type="button" data-close="budget-dialog" aria-label="Close"><span data-icon="close"></span></button></div><p class="muted" id="budget-month-label"></p><label>Budget amount (₹)<input name="amount" inputmode="decimal" pattern="[0-9]{1,9}(\.[0-9]{1,2})?" required maxlength="12"></label><p class="small muted">Enter 0 to remove this limit.</p><p class="form-error" id="budget-error" role="alert"></p><div class="dialog-footer footer-right"><button type="button" class="secondary" data-close="budget-dialog">Cancel</button><button class="primary" type="submit">Save budget</button></div></form></dialog>
+  <dialog id="delete-dialog" aria-labelledby="delete-title"><div class="dialog-heading"><h2 id="delete-title">Delete this transaction?</h2></div><p>This removes the entry from your tracker on every device. This cannot be undone.</p><p class="form-error" id="delete-error" role="alert"></p><div class="dialog-footer footer-right"><button type="button" class="secondary" data-close="delete-dialog">Keep transaction</button><button class="danger" id="confirm-delete">Delete</button></div></dialog>
+  <dialog id="account-dialog" aria-labelledby="account-title"><div class="dialog-heading"><h2 id="account-title">Your account</h2><button class="icon-button" type="button" data-close="account-dialog" aria-label="Close"><span data-icon="close"></span></button></div><p class="muted" id="account-username"></p><div class="account-actions"><button class="secondary" id="export-all"><span data-icon="download"></span>Export all transactions</button><button class="secondary" id="logout">Sign out</button></div><hr><form id="password-form"><h3>Change password</h3><label>Current password<input type="password" name="current_password" autocomplete="current-password" required maxlength="256"></label><label>New password<input type="password" name="new_password" autocomplete="new-password" required minlength="12" maxlength="256"></label><p class="small muted">Use at least 12 characters. You will sign in again on all devices.</p><p class="form-error" id="password-error" role="alert"></p><button type="submit" class="primary full">Update password</button></form></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body></html>
