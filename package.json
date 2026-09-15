@@ -14,7 +14,7 @@
     "validate": "npm run check:security && npm test && npm run build"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.115.0",
+    "@supabase/supabase-js": "2.116.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-router-dom": "7.18.3"
