@@ -9,6 +9,9 @@ const LearningPages = lazy(() => import('../pages/LearningPages'));
 const Practice = lazy(() => import('../pages/Practice'));
 const PrivacyPolicy = lazy(() => import('../pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('../pages/TermsOfService'));
+const CallPage = lazy(() => import('../pages/CallPage'));
+const CallAnalysis = lazy(() => import('../pages/CallAnalysis'));
+const CallHistory = lazy(() => import('../pages/CallHistory'));
 function Protected({ children }) {
   const { user, loading, error } = useAuth();
   if (loading) return <LoadingScreen />;
@@ -30,6 +33,10 @@ export default function AppRouter() {
     <Route path="/practice" element={<Navigate to="/practice/introduce-yourself" replace />} />
     <Route path="/chat" element={<Navigate to="/practice/introduce-yourself" replace />} />
     <Route path="/progress" element={<Navigate to="/dashboard" replace />} />
+    <Route path="/call" element={<Protected><CallPage /></Protected>} />
+    <Route path="/call/history" element={<Protected><CallHistory /></Protected>} />
+    <Route path="/call/analysis/:id" element={<Protected><CallAnalysis /></Protected>} />
+    <Route path="/call/:lessonId" element={<Protected><CallPage /></Protected>} />
     <Route path="/privacy" element={<PrivacyPolicy />} />
     <Route path="/terms" element={<TermsOfService />} />
     <Route path="*" element={<main className="account-card"><h1>Page not found</h1><a href="/">Back to home</a></main>} />

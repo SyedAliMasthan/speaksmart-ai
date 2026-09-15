@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import AppRouter from './config/router';
 import './styles/global.css';
+import './styles/cosmos.css';
 
 // Register service worker in production
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
