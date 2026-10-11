@@ -46,7 +46,7 @@ test('client cannot override the system role, lesson or model', async t => {
   }
   const r = await request(t, { body: { ...valid, model: 'unbounded-model', max_tokens: 999999 } });
   assert.equal(r.response.status, 200); const sent = JSON.parse(r.calls.at(-1).options.body);
-  assert.equal(sent.model, 'llama-3.3-70b-versatile'); assert.equal(sent.max_tokens, 600); assert.equal(sent.messages[0].role, 'system');
+  assert.equal(sent.model, 'openai/gpt-oss-120b'); assert.equal(sent.max_tokens, 1200); assert.equal(sent.messages[0].role, 'system');
 });
 test('persistent quota failures prevent provider spending', async t => {
   let r = await request(t, { quota: { message: 'AI_QUOTA_EXCEEDED' }, quotaStatus: 400 }); assert.equal(r.response.status, 429); assert.equal(r.calls.length, 2);
@@ -78,4 +78,11 @@ test('config rejects service-role keys and unsafe origins', () => {
 test('flood limiter enforces boundaries and resets with bounded memory', () => {
   let now = 0; const check = createLimiter({ limit: 2, maxKeys: 1, windowMs: 100, now: () => now });
   check('a'); check('a'); assert.throws(() => check('a')); assert.throws(() => check('b')); now = 101; check('b');
+});
+
+test('every new coach route requires authentication before database or provider work', async t => {
+  for (const action of ['profile','overview','start','session','turn','complete']) {
+    const r = await request(t, { path: `/api/coach/${action}`, headers: { Authorization: '' }, body: {} });
+    assert.equal(r.response.status, 401); assert.equal(r.calls.length, 0);
+  }
 });

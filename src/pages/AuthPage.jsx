@@ -12,6 +12,7 @@ export default function AuthPage({ mode }) {
   async function submit(event) {
     event.preventDefault(); if (busy) return; setBusy(true); setError(''); setMessage('');
     try {
+      if (!supabase) throw new Error('Sign-in is not available yet. Please try again later.');
       let result;
       if (mode === 'login') {
         result = await supabase.auth.signInWithPassword({ email: email.trim(), password });

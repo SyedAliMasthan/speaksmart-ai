@@ -3,11 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!url || !key) {
-  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in .env');
-}
-
-export const supabase = createClient(url, key, {
+export const supabase = url && key ? createClient(url, key, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -17,7 +13,7 @@ export const supabase = createClient(url, key, {
   global: {
     headers: { 'x-app-version': import.meta.env.VITE_APP_VERSION || '2.0.0' },
   },
-});
+}) : null;
 
 // ─── Google OAuth ───
 export const signInWithGoogle = () =>

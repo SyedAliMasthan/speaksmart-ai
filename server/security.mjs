@@ -21,6 +21,7 @@ export function loadConfig(env = process.env) {
   } else if (!key.startsWith('sb_publishable_')) throw new Error('Invalid Supabase publishable key.');
   return Object.freeze({ origin: origin.origin, supabase: supabase.origin, publicKey: key,
     groqKey: env.GROQ_API_KEY || '', sarvamKey: env.SARVAM_API_KEY || '',
+    coachModel: env.COACH_MODEL || 'openai/gpt-oss-120b',
     host: '127.0.0.1', port: Number(env.PORT || 3001) });
 }
 

@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { createCoachService, COACH_ROUTES } from './coach/service.mjs';
 import { HttpError, authenticate, consumeQuota, bearerToken, readJson, boundedJson, createLimiter, securityHeaders } from './security.mjs';
 import { LESSONS } from '../shared/lessons.js';
 
@@ -40,6 +41,7 @@ function safeReply(reply) {
 export function createApp(config, { fetchImpl = fetch, now = Date.now, logger = console } = {}) {
   const flood = createLimiter({ limit: 600, now });
   const active = new Map();
+  const coach = createCoachService(config, fetchImpl);
   async function upstream(url, options, max = 1000000) {
     let response;
     try { response = await fetchImpl(url, { ...options, signal: AbortSignal.timeout(25000), redirect: 'error' }); }
@@ -55,7 +57,7 @@ export function createApp(config, { fetchImpl = fetch, now = Date.now, logger = 
     };
     try {
       if (req.url === '/api/health' && req.method === 'GET') return reply(200, { status: 'ok' });
-      if (!['/api/chat', '/api/voice/transcribe', '/api/voice/speak'].includes(req.url)) throw new HttpError(404, 'Not found.');
+      if (!COACH_ROUTES.has(req.url) && !['/api/chat', '/api/voice/transcribe', '/api/voice/speak'].includes(req.url)) throw new HttpError(404, 'Not found.');
       if (req.method !== 'POST') throw new HttpError(405, 'Method not allowed.');
       if ((req.headers.origin && req.headers.origin !== config.origin) || req.headers['sec-fetch-site'] === 'cross-site') throw new HttpError(403, 'Request origin is not allowed.');
       // Never trust caller-supplied X-Forwarded-For. Nginx also applies per-IP limits.
@@ -65,6 +67,7 @@ export function createApp(config, { fetchImpl = fetch, now = Date.now, logger = 
       if ((active.get(user.id) || 0) >= 2 || active.size >= 1000) throw new HttpError(429, 'Please wait for your current request to finish.');
       userId = user.id; active.set(userId, (active.get(userId) || 0) + 1);
       const body = await readJson(req, req.url === '/api/voice/transcribe' ? 5800000 : 65536);
+      if (COACH_ROUTES.has(req.url)) return reply(200, await coach(req.url, body, { token, user }));
       let providerUrl, options;
       if (req.url === '/api/chat') {
         const messages = validateChat(body);

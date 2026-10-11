@@ -1,4 +1,4 @@
-const CACHE_NAME = 'speaksmart-static-v3';
+const CACHE_NAME = 'speaksmart-coach-v3-m1';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
