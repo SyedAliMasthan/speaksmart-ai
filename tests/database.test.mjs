@@ -12,7 +12,7 @@ before(async () => {
     CREATE TABLE auth.users(id uuid PRIMARY KEY, email text, raw_user_meta_data jsonb DEFAULT '{}');
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
     GRANT USAGE ON SCHEMA auth TO anon, authenticated;`);
-  for (const path of ['000_schema.sql','001_rls_policies.sql','002_security_patch.sql']) await db.exec(await readFile(`supabase/migrations/${path}`, 'utf8'));
+  for (const path of ['000_schema.sql','001_rls_policies.sql','002_security_patch.sql','003_coach_rebuild.sql']) await db.exec(await readFile(`supabase/migrations/${path}`, 'utf8'));
   await db.query('INSERT INTO auth.users(id,email) VALUES ($1,$2),($3,$4)', [first,'one@example.test',other,'two@example.test']);
 });
 after(() => db.close());
@@ -51,4 +51,18 @@ test('quotas are persistent, isolated and not user-writable', async () => {
 test('reapplying the security patch preserves existing user data', async () => {
   await db.exec('RESET ROLE'); await db.exec(await readFile('supabase/migrations/002_security_patch.sql','utf8'));
   assert.equal((await db.query('SELECT count(*)::int AS n FROM public.profiles')).rows[0].n, 2);
+});
+
+test('coach data participates in owner export and deletion', async () => {
+  await db.exec('RESET ROLE');
+  await db.exec(await readFile('supabase/migrations/003_coach_rebuild.sql','utf8'));
+  await caller('authenticated', first);
+  await db.query("SELECT public.coach_start_session('33333333-3333-4333-8333-333333333333','daily','{}','Hello')");
+  const data=(await db.query('SELECT public.export_user_data($1) AS data',[first])).rows[0].data;
+  assert.equal(data.coach_sessions.length,1);
+  await caller('authenticated',other);
+  await denied(()=>db.query('SELECT public.delete_user_data($1)',[first]));
+  await caller('authenticated',first);
+  await db.query('SELECT public.delete_user_data($1)',[first]);
+  assert.equal((await db.query('SELECT * FROM public.coach_sessions')).rows.length,0);
 });

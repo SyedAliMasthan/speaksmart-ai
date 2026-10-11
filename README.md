@@ -1,3 +1,7 @@
+# SpeakSmarts v3 — rebuild in progress
+
+The fresh English-coach application is on this branch. Start with [the rebuild guide](docs/REBUILD.md) for setup, migration, validation, scope and the next stages. This is an alpha milestone, not a production release or full Fluently feature parity.
+
 # SpeakSmart AI and SpendWise
 
 SpeakSmart provides email sign-in, ten English practice lessons, authenticated AI chat and speech, saved paragraphs, and profile preferences. SpendWise is the included personal finance tracker under `apps/spendwise`: income, expenses, transfers, monthly budgets, charts, CSV export, and cross-device persistence.

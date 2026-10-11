@@ -4,6 +4,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null); const [loading, setLoading] = useState(true); const [error, setError] = useState('');
   useEffect(() => {
+    if (!supabase) { setLoading(false); return; }
     let alive = true; let eventReceived = false;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, next) => {
       eventReceived = true;
